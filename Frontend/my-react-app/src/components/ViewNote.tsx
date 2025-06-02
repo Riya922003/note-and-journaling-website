@@ -11,9 +11,10 @@ type ViewNoteProps = {
   note: Note;
   onEdit: (id: string) => void;
   onDelete: (id: string) => void;
+  onRemoveReminder: (id: string) => void;
 };
 
-const ViewNote: React.FC<ViewNoteProps> = ({ note, onEdit, onDelete }) => {
+const ViewNote: React.FC<ViewNoteProps> = ({ note, onEdit, onDelete, onRemoveReminder }) => {
   return (
     <div className="bg-gradient-to-br from-white to-gray-50 rounded-xl shadow-lg border border-gray-100">
       <div className="p-6 space-y-6">
@@ -54,11 +55,22 @@ const ViewNote: React.FC<ViewNoteProps> = ({ note, onEdit, onDelete }) => {
 
         {/* Display Reminder if it exists */}
         {note.reminder && (
-          <div className="flex items-center text-sm text-gray-600 bg-gray-100 rounded-md px-3 py-2 mb-4">
-            <svg className="h-5 w-5 mr-2 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            Reminder: {note.reminder.toLocaleString()}
+          <div className="flex items-center justify-between text-sm text-gray-600 bg-gray-100 rounded-md px-3 py-2 mb-4">
+            <div className="flex items-center">
+              <svg className="h-5 w-5 mr-2 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              Reminder: {note.reminder.toLocaleString()}
+            </div>
+            <button
+              onClick={() => onRemoveReminder(note.id)}
+              className="inline-flex items-center px-2 py-1 rounded-md bg-red-100 text-red-600 hover:bg-red-200 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 text-xs font-medium"
+            >
+              <svg className="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+              Remove
+            </button>
           </div>
         )}
 
