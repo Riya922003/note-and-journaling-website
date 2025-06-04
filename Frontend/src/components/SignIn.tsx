@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { linkWithCredential, EmailAuthProvider, linkWithPopup } from 'firebase/auth';
+import { linkWithCredential, EmailAuthProvider, linkWithPopup, signInWithPopup } from 'firebase/auth';
 import { FirebaseError } from 'firebase/app';
 import { auth, googleProvider } from '../config/firebase';
 
@@ -14,7 +14,7 @@ const SignIn: React.FC<SignInProps> = ({ onClose, isUpgrading = false }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const { signInWithEmail, signUpWithEmail, signInWithGoogle, signInAnonymouslyUser } = useAuth();
+  const { signInWithEmail, signUpWithEmail, signInAnonymouslyUser } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -56,29 +56,40 @@ const SignIn: React.FC<SignInProps> = ({ onClose, isUpgrading = false }) => {
         // Link Google account using linkWithPopup
         await linkWithPopup(auth.currentUser, googleProvider);
       } else {
-        // First try to sign in with Google
-        try {
-          await signInWithGoogle();
-        } catch (error) {
-          if (error instanceof FirebaseError && error.code === 'auth/account-exists-with-different-credential') {
-            // If the account exists with different credentials, show a more helpful error
-            setError('An account already exists with this email. Please sign in with your original method first.');
-            return;
-          }
-          throw error; // Re-throw other errors
+        // For regular sign in, we'll use signInWithPopup directly
+        // This will handle both new sign-ins and re-sign-ins
+        const result = await signInWithPopup(auth, googleProvider);
+        
+        // If we get here, sign in was successful
+        if (result.user) {
+          console.log('Successfully signed in with Google:', result.user.email);
+          onClose();
         }
-      }
-      // Only close if sign in was successful
-      if (auth.currentUser) {
-        onClose();
       }
     } catch (error: unknown) {
       if (error instanceof FirebaseError) {
-        console.error('Google sign in error:', error);
-        setError(error.message);
+        console.error('Google sign in error:', error.code, error.message);
+        
+        // Handle specific error cases
+        switch (error.code) {
+          case 'auth/account-exists-with-different-credential':
+            setError('An account already exists with this email. Please sign in with your original method first.');
+            break;
+          case 'auth/popup-closed-by-user':
+            setError('Sign in was cancelled. Please try again.');
+            break;
+          case 'auth/cancelled-popup-request':
+            // This is normal when multiple popups are triggered, we can ignore it
+            break;
+          case 'auth/popup-blocked':
+            setError('Pop-up was blocked by your browser. Please allow pop-ups for this site.');
+            break;
+          default:
+            setError(error.message);
+        }
       } else {
-        console.error('Unexpected error:', error);
-        setError('An unexpected error occurred');
+        console.error('Unexpected error during Google sign in:', error);
+        setError('An unexpected error occurred during sign in');
       }
     }
   };
