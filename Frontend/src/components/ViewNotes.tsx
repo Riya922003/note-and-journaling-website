@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import moment from "moment";
@@ -36,6 +37,7 @@ const ViewNotes: React.FC<ViewNotesProps> = ({
   onLabelSelect,
   onUpdateColor
 }) => {
+  const navigate = useNavigate();
   const [hoveredNoteId, setHoveredNoteId] = useState<string | null>(null);
   const [showDatePicker, setShowDatePicker] = useState<string | null>(null);
   const [showEditMenu, setShowEditMenu] = useState<string | null>(null);
@@ -152,6 +154,21 @@ const ViewNotes: React.FC<ViewNotesProps> = ({
     setShowColorPicker(null);
   };
 
+  const handleNoteClick = (noteId: string, e: React.MouseEvent) => {
+    // Don't navigate if clicking on buttons or interactive elements
+    if (
+      (e.target as HTMLElement).closest('button') ||
+      (e.target as HTMLElement).closest('input') ||
+      showDatePicker === noteId ||
+      showEditMenu === noteId ||
+      showLabelInput === noteId ||
+      showColorPicker === noteId
+    ) {
+      return;
+    }
+    navigate(`/note/${noteId}`);
+  };
+
   return (
     <div className="bg-gradient-to-br from-white to-gray-50 rounded-xl shadow-lg border border-gray-100 p-6">
       <div className="flex items-center space-x-3 mb-6">
@@ -170,6 +187,7 @@ const ViewNotes: React.FC<ViewNotesProps> = ({
           {notes.map(note => (
             <div
               key={note.id}
+              onClick={(e) => handleNoteClick(note.id, e)}
               onMouseEnter={() => setHoveredNoteId(note.id)}
               onMouseLeave={() => {
                 if (!showDatePicker && !showEditMenu && !showLabelInput && !showColorPicker) {
@@ -311,6 +329,17 @@ const ViewNotes: React.FC<ViewNotesProps> = ({
 
                 {showDatePicker === note.id && (
                   <div ref={datePickerRef} className="absolute z-10 mt-2 bg-white rounded-lg shadow-lg p-3">
+                    <div className="flex justify-between items-center mb-2">
+                      <h3 className="text-sm font-medium text-gray-700">Set Reminder</h3>
+                      <button
+                        onClick={() => setShowDatePicker(null)}
+                        className="text-gray-400 hover:text-gray-600 focus:outline-none"
+                      >
+                        <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                    </div>
                     <div className="flex space-x-4">
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Date</label>

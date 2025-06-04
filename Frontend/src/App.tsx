@@ -3,6 +3,7 @@ import { Routes, Route, Navigate } from 'react-router-dom'
 import NotesPage from './pages/NotesPage'
 import RemindersPage from './pages/RemindersPage'
 import LabelsPage from './pages/LabelsPage'
+import NoteViewPage from './pages/NoteViewPage'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import Navbar from './components/Navbar'
 
@@ -131,6 +132,22 @@ const AppRoutes: React.FC = () => {
                 selectedLabel={selectedLabel}
                 onLabelSelect={handleLabelSelect}
                 selectedNoteId={selectedNoteId}
+              />
+            } 
+          />
+          <Route 
+            path="/note/:noteId" 
+            element={
+              <NoteViewPage
+                notes={notes}
+                onUpdateReminder={handleUpdateReminder}
+                onEditNote={handleEditNote}
+                onDeleteNote={handleDeleteNote}
+                onRemoveLabel={handleRemoveLabel}
+                onUpdateColor={handleUpdateColor}
+                labels={allLabels}
+                selectedLabel={selectedLabel}
+                onLabelSelect={handleLabelSelect}
               />
             } 
           />

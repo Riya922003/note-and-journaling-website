@@ -15,6 +15,7 @@ const CreateNote: React.FC<CreateNoteProps> = ({ onCreate, onCancel }) => {
       onCreate(title, content, null); // Always create note without reminder initially
       setTitle("");
       setContent("");
+      onCancel(); // Close the dialog after creating the note
     }
   };
 
