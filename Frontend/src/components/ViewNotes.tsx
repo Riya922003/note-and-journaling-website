@@ -182,7 +182,15 @@ const ViewNotes: React.FC<ViewNotesProps> = ({
                 className={`h-full rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 border border-gray-100 flex flex-col`}
               >
                 {/* Note Header */}
-                <div className="p-3 flex-1 min-h-0">
+                <div className="p-3 flex-1 min-h-0 relative">
+                  {/* Reminder Bell Icon */}
+                  {note.reminder && (
+                    <div className="absolute top-2 right-2 text-blue-600">
+                      <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                      </svg>
+                    </div>
+                  )}
                   <h3 className="text-base font-medium text-gray-900 truncate group-hover:text-blue-600 transition-colors duration-200">
                     {note.title}
                   </h3>
@@ -269,24 +277,17 @@ const ViewNotes: React.FC<ViewNotesProps> = ({
                           {/* Edit Icon */}
                           <button
                             onClick={() => handleEditClick(note.id)}
-                            className="text-gray-500 hover:text-gray-700"
+                            className="p-1 rounded-full text-gray-400 hover:bg-gray-100 transition-colors duration-200"
+                            title="Edit note"
                           >
-                            Edit
+                            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            </svg>
                           </button>
                         </>
                       )}
                     </div>
                   </div>
-
-                  {/* Reminder Display */}
-                  {note.reminder && (
-                    <div className="mt-1 flex items-center text-xs text-blue-600">
-                      <svg className="h-3.5 w-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                      {moment(note.reminder).calendar()}
-                    </div>
-                  )}
                 </div>
 
                 {/* Dropdowns and Popups */}
@@ -309,17 +310,32 @@ const ViewNotes: React.FC<ViewNotesProps> = ({
                 )}
 
                 {showDatePicker === note.id && (
-                  <div ref={datePickerRef} className="absolute z-10 mt-2 bg-white rounded-lg shadow-lg p-4">
-                    <DatePicker
-                      selected={reminderDate}
-                      onChange={(date: Date | null) => setReminderDate(date)}
-                      showTimeSelect
-                      timeFormat="HH:mm"
-                      timeIntervals={15}
-                      dateFormat="MMMM d, yyyy h:mm aa"
-                      inline
-                    />
-                    <div className="mt-2 flex justify-end space-x-2">
+                  <div ref={datePickerRef} className="absolute z-10 mt-2 bg-white rounded-lg shadow-lg p-3">
+                    <div className="flex space-x-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Date</label>
+                        <DatePicker
+                          selected={reminderDate}
+                          onChange={(date: Date | null) => setReminderDate(date)}
+                          dateFormat="MMMM d, yyyy"
+                          inline
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Time</label>
+                        <DatePicker
+                          selected={reminderTime}
+                          onChange={(time: Date | null) => setReminderTime(time)}
+                          showTimeSelect
+                          showTimeSelectOnly
+                          timeIntervals={15}
+                          timeFormat="HH:mm"
+                          dateFormat="h:mm aa"
+                          inline
+                        />
+                      </div>
+                    </div>
+                    <div className="mt-4 flex justify-center space-x-2">
                       <button
                         onClick={() => handleSaveReminder(note.id)}
                         className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
