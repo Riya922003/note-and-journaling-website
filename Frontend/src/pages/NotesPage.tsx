@@ -57,7 +57,7 @@ const NotesPage: React.FC<NotesPageProps> = ({
     setIsEditing(false);
   };
 
-  const handleSelectNoteOnly = (id: string) => {
+  const handleSelectNoteOnly = (id: string | null) => {
     onSelectNote(id);
     setIsEditing(false);
   };
@@ -97,7 +97,7 @@ const NotesPage: React.FC<NotesPageProps> = ({
           </div>
         </header>
 
-        <main className="flex-1 overflow-y-auto p-6">
+        <main className="flex-1 p-6">
           <div className="max-w-4xl mx-auto">
             {!showCreateForm ? (
               <div
@@ -124,40 +124,26 @@ const NotesPage: React.FC<NotesPageProps> = ({
               </div>
             )}
 
-            <ViewNotes
-              notes={filteredNotes}
-              onSelect={() => {}}
-              onEditClick={handleOpenEditDialog}
-              onUpdateReminder={onUpdateReminder}
-              onAddLabel={onAddLabel}
-              onRemoveLabel={onRemoveLabel}
-              onLabelSelect={onLabelSelect}
-              onUpdateColor={onUpdateColor}
-            />
-          </div>
-        </main>
-
-        {selectedNote && isEditing && (
-          <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex justify-center items-center">
-            <div className="relative p-8 bg-white w-full max-w-lg mx-auto rounded-lg shadow-xl">
-              <button
-                className="absolute top-3 right-3 text-gray-500 hover:text-gray-700"
-                onClick={handleCancelViewEdit}
-              >
-                <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-
+            {selectedNote && isEditing ? (
               <EditNote
                 note={selectedNote}
                 onSave={onEditNote}
                 onCancel={handleCancelViewEdit}
                 onDelete={handleDeleteFromEdit}
               />
-            </div>
+            ) : (
+              <ViewNotes
+                notes={filteredNotes}
+                onEditClick={handleOpenEditDialog}
+                onUpdateReminder={onUpdateReminder}
+                onAddLabel={onAddLabel}
+                onRemoveLabel={onRemoveLabel}
+                onLabelSelect={onLabelSelect}
+                onUpdateColor={onUpdateColor}
+              />
+            )}
           </div>
-        )}
+        </main>
       </div>
     </div>
   );

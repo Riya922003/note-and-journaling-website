@@ -11,9 +11,10 @@ type EditNoteProps = {
   note: Note;
   onSave: (id: string, title: string, content: string, reminder: Date | null) => void;
   onCancel: () => void;
+  onDelete: (id: string) => void;
 };
 
-const EditNote: React.FC<EditNoteProps> = ({ note, onSave, onCancel }) => {
+const EditNote: React.FC<EditNoteProps> = ({ note, onSave, onCancel, onDelete }) => {
   const [title, setTitle] = useState(note.title);
   const [content, setContent] = useState(note.content);
   const [reminderDate, setReminderDate] = useState(note.reminder ? note.reminder.toISOString().split('T')[0] : "");
@@ -137,6 +138,18 @@ const EditNote: React.FC<EditNoteProps> = ({ note, onSave, onCancel }) => {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
               </svg>
               <span>Save Changes</span>
+            </span>
+          </button>
+          <button 
+            type="button"
+            onClick={() => onDelete(note.id)}
+            className="flex-1 bg-gradient-to-r from-red-500 to-red-600 text-white py-3 px-6 rounded-lg hover:from-red-600 hover:to-red-700 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transform hover:scale-[1.02] active:scale-[0.98] font-medium shadow-md hover:shadow-lg"
+          >
+            <span className="flex items-center justify-center space-x-2">
+              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+              <span>Delete</span>
             </span>
           </button>
           <button 

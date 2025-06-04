@@ -14,7 +14,6 @@ type Note = {
 
 type ViewNotesProps = {
   notes: Note[];
-  onSelect: (id: string) => void;
   onEditClick: (id: string) => void;
   onUpdateReminder: (noteId: string, reminder: Date | null) => void;
   onAddLabel: (noteId: string, label: string) => void;
@@ -30,7 +29,6 @@ const PASTEL_COLORS = [
 
 const ViewNotes: React.FC<ViewNotesProps> = ({ 
   notes, 
-  onSelect,
   onEditClick,
   onUpdateReminder,
   onAddLabel,
@@ -90,14 +88,8 @@ const ViewNotes: React.FC<ViewNotesProps> = ({
     setShowColorPicker(null);
   };
 
-  const handleEditClick = (e: React.MouseEvent, noteId: string) => {
-    e.stopPropagation();
-    e.preventDefault();
+  const handleEditClick = (noteId: string) => {
     onEditClick(noteId);
-    setShowEditMenu(null);
-    setShowDatePicker(null);
-    setShowLabelInput(null);
-    setShowColorPicker(null);
   };
 
   const handleLabelIconClick = (e: React.MouseEvent, noteId: string) => {
@@ -151,9 +143,7 @@ const ViewNotes: React.FC<ViewNotesProps> = ({
     }
   };
 
-  const handleRemoveLabelClick = (e: React.MouseEvent, noteId: string, label: string) => {
-    e.stopPropagation();
-    e.preventDefault();
+  const handleRemoveLabelClick = (noteId: string, label: string) => {
     onRemoveLabel(noteId, label);
   };
 
@@ -220,7 +210,7 @@ const ViewNotes: React.FC<ViewNotesProps> = ({
                             className="ml-1 hover:text-blue-900"
                             onClick={(e) => {
                               e.stopPropagation();
-                              onRemoveLabel(note.id, label);
+                              handleRemoveLabelClick(note.id, label);
                             }}
                           >
                             ×
@@ -278,13 +268,10 @@ const ViewNotes: React.FC<ViewNotesProps> = ({
 
                           {/* Edit Icon */}
                           <button
-                            onClick={(e) => handleEditClick(e, note.id)}
-                            className="p-1 rounded-full text-gray-400 hover:bg-gray-100 transition-colors duration-200"
-                            title="Edit note"
+                            onClick={() => handleEditClick(note.id)}
+                            className="text-gray-500 hover:text-gray-700"
                           >
-                            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                            </svg>
+                            Edit
                           </button>
                         </>
                       )}
@@ -322,38 +309,29 @@ const ViewNotes: React.FC<ViewNotesProps> = ({
                 )}
 
                 {showDatePicker === note.id && (
-                  <div 
-                    ref={datePickerRef}
-                    className="absolute right-0 bottom-full mb-2 mr-2 z-50 bg-white rounded-lg shadow-lg border border-gray-200 p-3 space-y-3 min-w-[200px]"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <div className="space-y-2">
-                      <label className="block text-sm font-medium text-gray-700">Date</label>
-                      <DatePicker
-                        selected={reminderDate}
-                        onChange={(date: Date | null) => setReminderDate(date)}
-                        showTimeSelect
-                        selectedTime={reminderTime}
-                        onChangeTime={(time: Date | null) => setReminderTime(time)}
-                        dateFormat="MM/dd/yyyy h:mm aa"
-                        inline
-                      />
-                    </div>
-                    <div className="flex justify-between pt-2">
+                  <div ref={datePickerRef} className="absolute z-10 mt-2 bg-white rounded-lg shadow-lg p-4">
+                    <DatePicker
+                      selected={reminderDate}
+                      onChange={(date: Date | null) => setReminderDate(date)}
+                      showTimeSelect
+                      timeFormat="HH:mm"
+                      timeIntervals={15}
+                      dateFormat="MMMM d, yyyy h:mm aa"
+                      inline
+                    />
+                    <div className="mt-2 flex justify-end space-x-2">
                       <button
                         onClick={() => handleSaveReminder(note.id)}
-                        className="px-3 py-1 text-sm text-white bg-blue-600 rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                        className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
                       >
                         Save
                       </button>
-                      {note.reminder && (
-                        <button
-                          onClick={(e) => handleRemoveReminder(note.id)}
-                          className="px-3 py-1 text-sm text-red-600 hover:bg-red-50 rounded focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
-                        >
-                          Remove
-                        </button>
-                      )}
+                      <button
+                        onClick={() => handleRemoveReminder(note.id)}
+                        className="px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300"
+                      >
+                        Remove
+                      </button>
                     </div>
                   </div>
                 )}
@@ -365,7 +343,7 @@ const ViewNotes: React.FC<ViewNotesProps> = ({
                     onClick={(e) => e.stopPropagation()}
                   >
                     <button
-                      onClick={() => handleEditClick(e, note.id)}
+                      onClick={() => handleEditClick(note.id)}
                       className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center space-x-2"
                     >
                       <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -374,7 +352,7 @@ const ViewNotes: React.FC<ViewNotesProps> = ({
                       <span>Edit</span>
                     </button>
                     <button
-                      onClick={() => onRemoveLabel(note.id, note.labels[0])}
+                      onClick={() => handleRemoveLabelClick(note.id, note.labels[0])}
                       className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center space-x-2"
                     >
                       <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -396,11 +374,8 @@ const ViewNotes: React.FC<ViewNotesProps> = ({
                       {PASTEL_COLORS.map(color => (
                         <button
                           key={color}
-                          onClick={(e) => handleColorSelect(note.id, color)}
-                          className={`w-6 h-6 rounded-full border border-gray-200 ${color} hover:scale-110 transition-transform duration-200 ${
-                            (note.color || 'bg-white') === color ? 'ring-2 ring-blue-500 ring-offset-2' : ''
-                          }`}
-                          title={color.replace('bg-', '')}
+                          onClick={() => handleColorSelect(note.id, color)}
+                          className={`w-6 h-6 rounded-full ${color} border border-gray-300`}
                         />
                       ))}
                     </div>

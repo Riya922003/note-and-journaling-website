@@ -1,7 +1,6 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import RemindersView from '../components/RemindersView';
 import Sidebar from '../components/Sidebar';
+import EditNote from '../components/EditNote';
 
 type Note = {
   id: string;
@@ -9,6 +8,7 @@ type Note = {
   content: string;
   reminder: Date | null;
   labels: string[];
+  color?: string;
 };
 
 type RemindersPageProps = {
@@ -17,9 +17,7 @@ type RemindersPageProps = {
   onSelectNote: (id: string | null) => void;
   onEditNote: (id: string, title: string, content: string, reminder: Date | null) => void;
   onDeleteNote: (id: string) => void;
-  onAddLabel: (noteId: string, label: string) => void;
   onRemoveLabel: (noteId: string, label: string) => void;
-  onUpdateColor: (noteId: string, color: string) => void;
   labels: string[];
   selectedLabel: string | null;
   onLabelSelect: (label: string | null) => void;
@@ -32,37 +30,108 @@ const RemindersPage: React.FC<RemindersPageProps> = ({
   onSelectNote,
   onEditNote,
   onDeleteNote,
-  onAddLabel,
   onRemoveLabel,
-  onUpdateColor,
   labels,
   selectedLabel,
   onLabelSelect,
   selectedNoteId
 }) => {
-  const navigate = useNavigate();
+  const [isEditing, setIsEditing] = React.useState(false);
+  const selectedNote = notes.find(note => note.id === selectedNoteId);
+
+  const handleCancelViewEdit = () => {
+    onSelectNote(null);
+    setIsEditing(false);
+  };
+
+  const handleEditNote = (id: string, title: string, content: string, reminder: Date | null) => {
+    onEditNote(id, title, content, reminder);
+    setIsEditing(false);
+  };
+
+  // Filter notes to show only those with reminders
+  const notesWithReminders = notes.filter(note => note.reminder !== null);
+  
+  // Further filter by selected label if one is selected
+  const filteredNotes = selectedLabel 
+    ? notesWithReminders.filter(note => note.labels.includes(selectedLabel))
+    : notesWithReminders;
 
   return (
     <div className="flex min-h-screen bg-gray-100">
       <Sidebar
         notes={notes}
-        onUpdateReminder={onUpdateReminder}
         labels={labels}
         selectedLabel={selectedLabel}
         onLabelSelect={onLabelSelect}
         onSelectNote={onSelectNote}
         defaultView="reminders"
       />
-      <div className="flex-1 p-6">
+
+      <main className="flex-1 p-6">
         <div className="max-w-4xl mx-auto">
-          <RemindersView
-            notes={notes}
-            onSelectNote={onSelectNote}
-            onUpdateReminder={onUpdateReminder}
-            onNavigateHome={() => navigate('/')}
-          />
+          {selectedNote && isEditing ? (
+            <EditNote
+              note={selectedNote}
+              onSave={handleEditNote}
+              onCancel={handleCancelViewEdit}
+              onDelete={onDeleteNote}
+            />
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {filteredNotes.map(note => (
+                <div
+                  key={note.id}
+                  className={`relative rounded-lg shadow-md p-4 ${note.color || 'bg-white'} hover:shadow-lg transition-shadow duration-200`}
+                >
+                  <h3 className="text-lg font-semibold mb-2">{note.title}</h3>
+                  <p className="text-gray-600 mb-4">{note.content}</p>
+                  
+                  <div className="text-sm text-gray-500 mb-2">
+                    Reminder: {note.reminder?.toLocaleString()}
+                  </div>
+
+                  <div className="flex flex-wrap gap-2 mb-4">
+                    {note.labels.map(label => (
+                      <span
+                        key={label}
+                        className="px-2 py-1 bg-blue-100 text-blue-800 text-sm rounded-full"
+                        onClick={() => onRemoveLabel(note.id, label)}
+                      >
+                        {label} ×
+                      </span>
+                    ))}
+                  </div>
+
+                  <div className="flex justify-end space-x-2">
+                    <button
+                      onClick={() => {
+                        onSelectNote(note.id);
+                        setIsEditing(true);
+                      }}
+                      className="px-3 py-1 text-sm text-blue-600 hover:bg-blue-50 rounded"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => onUpdateReminder(note.id, null)}
+                      className="px-3 py-1 text-sm text-red-600 hover:bg-red-50 rounded"
+                    >
+                      Remove Reminder
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {filteredNotes.length === 0 && (
+            <div className="text-center py-12">
+              <p className="text-gray-500">No reminders found</p>
+            </div>
+          )}
         </div>
-      </div>
+      </main>
     </div>
   );
 };
