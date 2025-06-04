@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import RemindersView from '../components/RemindersView';
 import Sidebar from '../components/Sidebar';
 
@@ -13,11 +14,12 @@ type Note = {
 type RemindersPageProps = {
   notes: Note[];
   onUpdateReminder: (noteId: string, reminder: Date | null) => void;
-  onSelectNote: (id: string) => void;
+  onSelectNote: (id: string | null) => void;
   onEditNote: (id: string, title: string, content: string, reminder: Date | null) => void;
   onDeleteNote: (id: string) => void;
   onAddLabel: (noteId: string, label: string) => void;
   onRemoveLabel: (noteId: string, label: string) => void;
+  onUpdateColor: (noteId: string, color: string) => void;
   labels: string[];
   selectedLabel: string | null;
   onLabelSelect: (label: string | null) => void;
@@ -32,11 +34,14 @@ const RemindersPage: React.FC<RemindersPageProps> = ({
   onDeleteNote,
   onAddLabel,
   onRemoveLabel,
+  onUpdateColor,
   labels,
   selectedLabel,
   onLabelSelect,
   selectedNoteId
 }) => {
+  const navigate = useNavigate();
+
   return (
     <div className="flex min-h-screen bg-gray-100">
       <Sidebar
@@ -54,6 +59,7 @@ const RemindersPage: React.FC<RemindersPageProps> = ({
             notes={notes}
             onSelectNote={onSelectNote}
             onUpdateReminder={onUpdateReminder}
+            onNavigateHome={() => navigate('/')}
           />
         </div>
       </div>

@@ -11,6 +11,8 @@
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.8",
+    "@types/moment": "^2.11.29",
+    "moment": "^2.30.1",
     "my-react-app": "file:",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",

@@ -60,8 +60,8 @@ const EditNote: React.FC<EditNoteProps> = ({ note, onSave, onCancel }) => {
   };
 
   return (
-    <div className="bg-gradient-to-br from-white to-gray-50 rounded-xl shadow-lg border border-gray-100">
-      <form onSubmit={handleSubmit} className="p-6 space-y-6">
+    <div className="bg-gradient-to-br from-white to-gray-50 rounded-xl shadow-lg border border-gray-100 max-h-[90vh] flex flex-col">
+      <form onSubmit={handleSubmit} className="p-6 space-y-6 flex-1 flex flex-col min-h-0">
         <div className="flex items-center space-x-3">
           <div className="h-8 w-8 rounded-full bg-yellow-500 flex items-center justify-center">
             <svg className="h-5 w-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -73,7 +73,7 @@ const EditNote: React.FC<EditNoteProps> = ({ note, onSave, onCancel }) => {
           </h2>
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-4 flex-1 flex flex-col min-h-0">
           <div className="relative">
             <input
               type="text"
@@ -90,15 +90,15 @@ const EditNote: React.FC<EditNoteProps> = ({ note, onSave, onCancel }) => {
             </div>
           </div>
 
-          <div className="relative">
+          <div className="relative flex-1 flex flex-col min-h-0">
             <textarea
               placeholder="Write your note content here..."
               value={content}
               onChange={e => setContent(e.target.value)}
               required
-              className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all duration-200 bg-white/50 backdrop-blur-sm placeholder-gray-400 text-gray-700 min-h-[200px] resize-y"
+              className="flex-1 w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all duration-200 bg-white/50 backdrop-blur-sm placeholder-gray-400 text-gray-700 resize-none min-h-[200px] overflow-y-auto break-words"
             />
-            <div className="absolute bottom-3 right-3 text-xs text-gray-400">
+            <div className="absolute bottom-3 right-3 text-xs text-gray-400 bg-white/80 px-2 py-1 rounded">
               {content.length} characters
             </div>
           </div>
@@ -127,7 +127,7 @@ const EditNote: React.FC<EditNoteProps> = ({ note, onSave, onCancel }) => {
           </div>
         </div>
 
-        <div className="flex space-x-4">
+        <div className="flex space-x-4 pt-4 border-t border-gray-100">
           <button 
             type="submit"
             className="flex-1 bg-gradient-to-r from-yellow-500 to-yellow-600 text-white py-3 px-6 rounded-lg hover:from-yellow-600 hover:to-yellow-700 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 transform hover:scale-[1.02] active:scale-[0.98] font-medium shadow-md hover:shadow-lg"

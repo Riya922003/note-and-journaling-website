@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import CreateNote from '../components/CreateNote';
-import ViewNote from '../components/ViewNote';
 import EditNote from '../components/EditNote';
+import ViewNotes from '../components/ViewNotes';
 import Sidebar from '../components/Sidebar';
 
 type Note = {
@@ -10,17 +10,19 @@ type Note = {
   content: string;
   reminder: Date | null;
   labels: string[];
+  color?: string;
 };
 
 type NotesPageProps = {
   notes: Note[];
   onUpdateReminder: (noteId: string, reminder: Date | null) => void;
-  onSelectNote: (id: string) => void;
+  onSelectNote: (id: string | null) => void;
   onEditNote: (id: string, title: string, content: string, reminder: Date | null) => void;
   onDeleteNote: (id: string) => void;
-  onCreateNote: (title: string, content: string, reminder: Date | null) => void;
+  onCreateNote: (title: string, content: string) => void;
   onAddLabel: (noteId: string, label: string) => void;
   onRemoveLabel: (noteId: string, label: string) => void;
+  onUpdateColor: (noteId: string, color: string) => void;
   labels: string[];
   selectedLabel: string | null;
   onLabelSelect: (label: string | null) => void;
@@ -36,6 +38,7 @@ const NotesPage: React.FC<NotesPageProps> = ({
   onCreateNote,
   onAddLabel,
   onRemoveLabel,
+  onUpdateColor,
   labels,
   selectedLabel,
   onLabelSelect,
@@ -43,8 +46,6 @@ const NotesPage: React.FC<NotesPageProps> = ({
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [showCreateForm, setShowCreateForm] = useState(false);
-  const [showLabelInput, setShowLabelInput] = useState<string | null>(null);
-  const [newLabel, setNewLabel] = useState("");
 
   const selectedNote = notes.find(note => note.id === selectedNoteId);
   const filteredNotes = selectedLabel 
@@ -56,23 +57,29 @@ const NotesPage: React.FC<NotesPageProps> = ({
     setIsEditing(false);
   };
 
-  const handleLabelKeyPress = (e: React.KeyboardEvent<HTMLInputElement>, noteId: string) => {
-    if (e.key === 'Enter' && newLabel.trim()) {
-      onAddLabel(noteId, newLabel.trim());
-      setNewLabel("");
-      setShowLabelInput(null);
-    }
+  const handleSelectNoteOnly = (id: string) => {
+    onSelectNote(id);
+    setIsEditing(false);
+  };
+
+  const handleDeleteFromEdit = (id: string) => {
+    onDeleteNote(id);
+    handleCancelViewEdit();
+  };
+
+  const handleOpenEditDialog = (id: string) => {
+    onSelectNote(id);
+    setIsEditing(true);
   };
 
   return (
     <div className="flex min-h-screen bg-gray-100">
       <Sidebar
         notes={notes}
-        onUpdateReminder={onUpdateReminder}
         labels={labels}
         selectedLabel={selectedLabel}
         onLabelSelect={onLabelSelect}
-        onSelectNote={onSelectNote}
+        onSelectNote={handleSelectNoteOnly}
         defaultView="notes"
       />
 
@@ -98,6 +105,7 @@ const NotesPage: React.FC<NotesPageProps> = ({
                 onClick={() => {
                   setShowCreateForm(true);
                   onSelectNote(null);
+                  setIsEditing(false);
                 }}
               >
                 <input
@@ -116,102 +124,20 @@ const NotesPage: React.FC<NotesPageProps> = ({
               </div>
             )}
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredNotes.map(note => (
-                <div
-                  key={note.id}
-                  className="group bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 border border-gray-200 p-4 cursor-pointer relative"
-                  onClick={() => onSelectNote(note.id)}
-                >
-                  <div className="flex items-center justify-between mb-2">
-                    <h3 className="text-lg font-semibold text-gray-800 truncate">{note.title}</h3>
-                    <div className="flex items-center space-x-2">
-                      <button
-                        className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 p-1 hover:bg-gray-100 rounded-full"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setShowLabelInput(note.id);
-                        }}
-                      >
-                        <svg className="h-5 w-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 7h.01M7 3h5.5c.75 0 1.5.25 2 .75l3.5 3.5c.5.5.75 1.25.75 2V19a2 2 0 01-2 2H7a2 2 0 01-2-2V5a2 2 0 012-2z" />
-                        </svg>
-                      </button>
-                      {note.reminder && (
-                        <div className="flex items-center text-blue-500">
-                          <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                          </svg>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                  <p className="text-gray-600 text-sm line-clamp-5">{note.content}</p>
-
-                  {showLabelInput === note.id ? (
-                    <div className="mt-2" onClick={e => e.stopPropagation()}>
-                      <input
-                        type="text"
-                        value={newLabel}
-                        onChange={(e) => setNewLabel(e.target.value)}
-                        onKeyPress={(e) => handleLabelKeyPress(e, note.id)}
-                        onBlur={() => {
-                          setShowLabelInput(null);
-                          setNewLabel("");
-                        }}
-                        placeholder="Add label..."
-                        className="w-full px-2 py-1 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-                        autoFocus
-                      />
-                    </div>
-                  ) : (
-                    note.labels.length > 0 && (
-                      <div className="mt-2 flex flex-wrap gap-1">
-                        {note.labels.map(label => (
-                          <span
-                            key={label}
-                            className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              onLabelSelect(label);
-                            }}
-                          >
-                            {label}
-                            <button
-                              className="ml-1 hover:text-blue-900"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                onRemoveLabel(note.id, label);
-                              }}
-                            >
-                              ×
-                            </button>
-                          </span>
-                        ))}
-                      </div>
-                    )
-                  )}
-                </div>
-              ))}
-            </div>
-
-            {filteredNotes.length === 0 && !showCreateForm && (
-              <div className="text-center py-16">
-                <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                </svg>
-                <h3 className="mt-2 text-lg font-medium text-gray-900">No notes found</h3>
-                <p className="mt-1 text-sm text-gray-500">
-                  {selectedLabel 
-                    ? `No notes with the label "${selectedLabel}"`
-                    : "Get started by creating a new note."}
-                </p>
-              </div>
-            )}
+            <ViewNotes
+              notes={filteredNotes}
+              onSelect={() => {}}
+              onEditClick={handleOpenEditDialog}
+              onUpdateReminder={onUpdateReminder}
+              onAddLabel={onAddLabel}
+              onRemoveLabel={onRemoveLabel}
+              onLabelSelect={onLabelSelect}
+              onUpdateColor={onUpdateColor}
+            />
           </div>
         </main>
 
-        {selectedNote && (
+        {selectedNote && isEditing && (
           <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex justify-center items-center">
             <div className="relative p-8 bg-white w-full max-w-lg mx-auto rounded-lg shadow-xl">
               <button
@@ -223,23 +149,12 @@ const NotesPage: React.FC<NotesPageProps> = ({
                 </svg>
               </button>
 
-              {!isEditing ? (
-                <ViewNote
-                  note={selectedNote}
-                  onEdit={() => setIsEditing(true)}
-                  onDelete={(id) => {
-                    onDeleteNote(id);
-                    handleCancelViewEdit();
-                  }}
-                  onRemoveReminder={(id) => onUpdateReminder(id, null)}
-                />
-              ) : (
-                <EditNote
-                  note={selectedNote}
-                  onSave={onEditNote}
-                  onCancel={handleCancelViewEdit}
-                />
-              )}
+              <EditNote
+                note={selectedNote}
+                onSave={onEditNote}
+                onCancel={handleCancelViewEdit}
+                onDelete={handleDeleteFromEdit}
+              />
             </div>
           </div>
         )}

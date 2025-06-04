@@ -10,8 +10,6 @@ type SidebarProps = {
     labels: string[];
   }>;
   labels: string[];
-  selectedLabel: string | null;
-  onLabelSelect: (label: string | null) => void;
   defaultView?: 'notes' | 'reminders' | 'labels';
 };
 
@@ -20,8 +18,6 @@ type View = 'notes' | 'reminders' | 'labels';
 const Sidebar: React.FC<SidebarProps> = ({ 
   notes, 
   labels,
-  selectedLabel,
-  onLabelSelect,
   defaultView = 'notes'
 }) => {
   const navigate = useNavigate();
@@ -105,33 +101,6 @@ const Sidebar: React.FC<SidebarProps> = ({
               </span>
             )}
           </button>
-
-          {labels.length > 0 && (
-            <div className="pt-4">
-              <h3 className="px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                All Labels
-              </h3>
-              <div className="mt-2 space-y-1">
-                {labels.map(label => (
-                  <button
-                    key={label}
-                    onClick={() => {
-                      onLabelSelect(label === selectedLabel ? null : label);
-                      handleViewChange('labels');
-                    }}
-                    className={`w-full flex items-center space-x-3 px-4 py-2 rounded-lg transition-colors duration-200 ${
-                      label === selectedLabel ? 'bg-blue-50 text-blue-600' : 'text-gray-700 hover:bg-gray-100'
-                    }`}
-                  >
-                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 7h.01M7 3h5.5c.75 0 1.5.25 2 .75l3.5 3.5c.5.5.75 1.25.75 2V19a2 2 0 01-2 2H7a2 2 0 01-2-2V5a2 2 0 012-2z" />
-                    </svg>
-                    <span className="truncate">{label}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
         </div>
       </div>
     </div>

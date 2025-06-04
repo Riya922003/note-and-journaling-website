@@ -10,6 +10,7 @@ type Note = {
   content: string;
   reminder: Date | null;
   labels: string[];
+  color?: string;
 };
 
 const App: React.FC = () => {
@@ -20,13 +21,14 @@ const App: React.FC = () => {
   // Get unique labels from all notes
   const allLabels = Array.from(new Set(notes.flatMap(note => note.labels))).sort();
 
-  const handleCreateNote = (title: string, content: string, reminder: Date | null) => {
+  const handleCreateNote = (title: string, content: string) => {
     const newNote: Note = {
       id: Date.now().toString(),
       title,
       content,
-      reminder,
-      labels: []
+      reminder: null,
+      labels: [],
+      color: 'bg-white' // Default color
     };
     setNotes([newNote, ...notes]);
   };
@@ -50,11 +52,14 @@ const App: React.FC = () => {
   };
 
   const handleUpdateReminder = (noteId: string, reminder: Date | null) => {
-    setNotes(notes.map(note => 
-      note.id === noteId 
-        ? { ...note, reminder } 
-        : note
-    ));
+    console.log('Updating reminder in App.tsx:', { noteId, reminder });
+    setNotes(notes.map(note => {
+      if (note.id === noteId) {
+        console.log('Updating note:', note.id, 'New reminder:', reminder);
+        return { ...note, reminder };
+      }
+      return note;
+    }));
   };
 
   const handleLabelSelect = (label: string | null) => {
@@ -85,6 +90,12 @@ const App: React.FC = () => {
     }));
   };
 
+  const handleUpdateColor = (noteId: string, color: string) => {
+    setNotes(notes.map(note => 
+      note.id === noteId ? { ...note, color } : note
+    ));
+  };
+
   return (
     <Routes>
       <Route 
@@ -99,6 +110,7 @@ const App: React.FC = () => {
             onCreateNote={handleCreateNote}
             onAddLabel={handleAddLabel}
             onRemoveLabel={handleRemoveLabel}
+            onUpdateColor={handleUpdateColor}
             labels={allLabels}
             selectedLabel={selectedLabel}
             onLabelSelect={handleLabelSelect}
@@ -117,6 +129,7 @@ const App: React.FC = () => {
             onDeleteNote={handleDeleteNote}
             onAddLabel={handleAddLabel}
             onRemoveLabel={handleRemoveLabel}
+            onUpdateColor={handleUpdateColor}
             labels={allLabels}
             selectedLabel={selectedLabel}
             onLabelSelect={handleLabelSelect}
@@ -135,6 +148,7 @@ const App: React.FC = () => {
             onDeleteNote={handleDeleteNote}
             onAddLabel={handleAddLabel}
             onRemoveLabel={handleRemoveLabel}
+            onUpdateColor={handleUpdateColor}
             labels={allLabels}
             selectedLabel={selectedLabel}
             onLabelSelect={handleLabelSelect}

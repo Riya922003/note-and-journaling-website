@@ -11,22 +11,34 @@ type RemindersViewProps = {
   notes: Note[];
   onSelectNote: (id: string) => void;
   onUpdateReminder: (noteId: string, reminder: Date | null) => void;
+  onNavigateHome: () => void;
 };
 
-const RemindersView: React.FC<RemindersViewProps> = ({ notes, onSelectNote, onUpdateReminder }) => {
+const RemindersView: React.FC<RemindersViewProps> = ({ notes, onSelectNote, onUpdateReminder, onNavigateHome }) => {
   const notesWithReminders = notes.filter(note => note.reminder !== null);
 
   return (
     <div className="bg-gradient-to-br from-white to-gray-50 rounded-xl shadow-lg border border-gray-100 p-6">
-      <div className="flex items-center space-x-3 mb-6">
-        <div className="h-8 w-8 rounded-full bg-blue-500 flex items-center justify-center">
-          <svg className="h-5 w-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center space-x-3">
+          <div className="h-8 w-8 rounded-full bg-blue-500 flex items-center justify-center">
+            <svg className="h-5 w-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">
+            Reminders
+          </h2>
         </div>
-        <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">
-          Reminders
-        </h2>
+        <button
+          onClick={onNavigateHome}
+          className="inline-flex items-center px-3 py-2 rounded-md bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+          title="Go to Home"
+        >
+          <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+          </svg>
+        </button>
       </div>
 
       {notesWithReminders.length > 0 ? (
