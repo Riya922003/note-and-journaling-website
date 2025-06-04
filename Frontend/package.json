@@ -10,8 +10,10 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@firebase/auth": "^1.10.6",
     "@tailwindcss/vite": "^4.1.8",
     "@types/moment": "^2.11.29",
+    "firebase": "^11.8.1",
     "moment": "^2.30.1",
     "note-and-journaling-website": "file:",
     "react": "^19.1.0",

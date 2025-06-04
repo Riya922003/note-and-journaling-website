@@ -1,8 +1,10 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import NotesPage from './pages/NotesPage'
 import RemindersPage from './pages/RemindersPage'
 import LabelsPage from './pages/LabelsPage'
+import { AuthProvider, useAuth } from './contexts/AuthContext'
+import Navbar from './components/Navbar'
 
 type Note = {
   id: string;
@@ -13,10 +15,18 @@ type Note = {
   color?: string;
 };
 
-const App: React.FC = () => {
+const AppRoutes: React.FC = () => {
+  const { user, signInAnonymouslyUser } = useAuth();
   const [notes, setNotes] = useState<Note[]>([]);
   const [selectedNoteId, setSelectedNoteId] = useState<string | null>(null);
   const [selectedLabel, setSelectedLabel] = useState<string | null>(null);
+
+  // Sign in anonymously when the app loads if there's no user
+  useEffect(() => {
+    if (!user) {
+      signInAnonymouslyUser();
+    }
+  }, [user, signInAnonymouslyUser]);
 
   // Get unique labels from all notes
   const allLabels = Array.from(new Set(notes.flatMap(note => note.labels))).sort();
@@ -100,65 +110,78 @@ const App: React.FC = () => {
   };
 
   return (
-    <Routes>
-      <Route 
-        path="/" 
-        element={
-          <NotesPage
-            notes={notes}
-            onUpdateReminder={handleUpdateReminder}
-            onSelectNote={handleSelectNote}
-            onEditNote={handleEditNote}
-            onDeleteNote={handleDeleteNote}
-            onCreateNote={handleCreateNote}
-            onAddLabel={handleAddLabel}
-            onRemoveLabel={handleRemoveLabel}
-            onUpdateColor={handleUpdateColor}
-            labels={allLabels}
-            selectedLabel={selectedLabel}
-            onLabelSelect={handleLabelSelect}
-            selectedNoteId={selectedNoteId}
+    <>
+      <Navbar />
+      <div className="container mx-auto px-4 py-8">
+        <Routes>
+          <Route 
+            path="/" 
+            element={
+              <NotesPage
+                notes={notes}
+                onUpdateReminder={handleUpdateReminder}
+                onSelectNote={handleSelectNote}
+                onEditNote={handleEditNote}
+                onDeleteNote={handleDeleteNote}
+                onCreateNote={handleCreateNote}
+                onAddLabel={handleAddLabel}
+                onRemoveLabel={handleRemoveLabel}
+                onUpdateColor={handleUpdateColor}
+                labels={allLabels}
+                selectedLabel={selectedLabel}
+                onLabelSelect={handleLabelSelect}
+                selectedNoteId={selectedNoteId}
+              />
+            } 
           />
-        } 
-      />
-      <Route 
-        path="/reminders" 
-        element={
-          <RemindersPage
-            notes={notes}
-            onUpdateReminder={handleUpdateReminder}
-            onSelectNote={handleSelectNote}
-            onEditNote={handleEditNote}
-            onDeleteNote={handleDeleteNote}
-            onRemoveLabel={handleRemoveLabel}
-            labels={allLabels}
-            selectedLabel={selectedLabel}
-            onLabelSelect={handleLabelSelect}
-            selectedNoteId={selectedNoteId}
+          <Route 
+            path="/reminders" 
+            element={
+              <RemindersPage
+                notes={notes}
+                onUpdateReminder={handleUpdateReminder}
+                onSelectNote={handleSelectNote}
+                onEditNote={handleEditNote}
+                onDeleteNote={handleDeleteNote}
+                onRemoveLabel={handleRemoveLabel}
+                labels={allLabels}
+                selectedLabel={selectedLabel}
+                onLabelSelect={handleLabelSelect}
+                selectedNoteId={selectedNoteId}
+              />
+            } 
           />
-        } 
-      />
-      <Route 
-        path="/labels" 
-        element={
-          <LabelsPage
-            notes={notes}
-            onSelectNote={handleSelectNote}
-            onEditNote={handleEditNote}
-            onDeleteNote={handleDeleteNote}
-            onAddLabel={handleAddLabel}
-            onRemoveLabel={handleRemoveLabel}
-            onUpdateColor={handleUpdateColor}
-            labels={allLabels}
-            selectedLabel={selectedLabel}
-            onLabelSelect={handleLabelSelect}
-            selectedNoteId={selectedNoteId}
+          <Route 
+            path="/labels" 
+            element={
+              <LabelsPage
+                notes={notes}
+                onSelectNote={handleSelectNote}
+                onEditNote={handleEditNote}
+                onDeleteNote={handleDeleteNote}
+                onAddLabel={handleAddLabel}
+                onRemoveLabel={handleRemoveLabel}
+                onUpdateColor={handleUpdateColor}
+                labels={allLabels}
+                selectedLabel={selectedLabel}
+                onLabelSelect={handleLabelSelect}
+                selectedNoteId={selectedNoteId}
+              />
+            } 
           />
-        } 
-      />
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </div>
+    </>
   );
-}
+};
+
+const App: React.FC = () => {
+  return (
+    <AuthProvider>
+      <AppRoutes />
+    </AuthProvider>
+  );
+};
 
 export default App;
