@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import SignIn from './SignIn';
 
@@ -6,13 +6,26 @@ const Navbar: React.FC = () => {
   const { user, signOutUser } = useAuth();
   const [showSignIn, setShowSignIn] = useState(false);
 
+  // Add effect to log auth state changes
+  useEffect(() => {
+    console.log('Auth state changed:', user ? 'User logged in' : 'No user');
+  }, [user]);
+
   const handleSignOut = async () => {
     try {
       await signOutUser();
+      setShowSignIn(false); // Ensure sign in dialog is closed after sign out
     } catch (error) {
       console.error('Error signing out:', error);
     }
   };
+
+  // Close sign in dialog when user successfully signs in
+  useEffect(() => {
+    if (user && !user.isAnonymous) {
+      setShowSignIn(false);
+    }
+  }, [user]);
 
   return (
     <nav className="bg-white shadow-lg">

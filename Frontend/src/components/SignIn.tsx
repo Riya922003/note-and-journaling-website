@@ -56,13 +56,28 @@ const SignIn: React.FC<SignInProps> = ({ onClose, isUpgrading = false }) => {
         // Link Google account using linkWithPopup
         await linkWithPopup(auth.currentUser, googleProvider);
       } else {
-        await signInWithGoogle();
+        // First try to sign in with Google
+        try {
+          await signInWithGoogle();
+        } catch (error) {
+          if (error instanceof FirebaseError && error.code === 'auth/account-exists-with-different-credential') {
+            // If the account exists with different credentials, show a more helpful error
+            setError('An account already exists with this email. Please sign in with your original method first.');
+            return;
+          }
+          throw error; // Re-throw other errors
+        }
       }
-      onClose();
+      // Only close if sign in was successful
+      if (auth.currentUser) {
+        onClose();
+      }
     } catch (error: unknown) {
       if (error instanceof FirebaseError) {
+        console.error('Google sign in error:', error);
         setError(error.message);
       } else {
+        console.error('Unexpected error:', error);
         setError('An unexpected error occurred');
       }
     }
