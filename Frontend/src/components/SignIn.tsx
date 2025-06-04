@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { linkWithCredential, EmailAuthProvider, GoogleAuthProvider, linkWithPopup } from 'firebase/auth';
+import { linkWithCredential, EmailAuthProvider, linkWithPopup } from 'firebase/auth';
+import { FirebaseError } from 'firebase/app';
 import { auth, googleProvider } from '../config/firebase';
 
 interface SignInProps {
@@ -40,8 +41,12 @@ const SignIn: React.FC<SignInProps> = ({ onClose, isUpgrading = false }) => {
         }
       }
       onClose();
-    } catch (error: any) {
-      setError(error.message);
+    } catch (error: unknown) {
+      if (error instanceof FirebaseError) {
+        setError(error.message);
+      } else {
+        setError('An unexpected error occurred');
+      }
     }
   };
 
@@ -54,8 +59,12 @@ const SignIn: React.FC<SignInProps> = ({ onClose, isUpgrading = false }) => {
         await signInWithGoogle();
       }
       onClose();
-    } catch (error: any) {
-      setError(error.message);
+    } catch (error: unknown) {
+      if (error instanceof FirebaseError) {
+        setError(error.message);
+      } else {
+        setError('An unexpected error occurred');
+      }
     }
   };
 
@@ -67,8 +76,12 @@ const SignIn: React.FC<SignInProps> = ({ onClose, isUpgrading = false }) => {
     try {
       await signInAnonymouslyUser();
       onClose();
-    } catch (error: any) {
-      setError(error.message);
+    } catch (error: unknown) {
+      if (error instanceof FirebaseError) {
+        setError(error.message);
+      } else {
+        setError('An unexpected error occurred');
+      }
     }
   };
 
