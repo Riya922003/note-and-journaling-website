@@ -33,14 +33,16 @@ const SignIn: React.FC<SignInProps> = ({ onClose, isUpgrading = false }) => {
           const credential = EmailAuthProvider.credential(email, password);
           await linkWithCredential(auth.currentUser, credential);
         }
+        onClose();
       } else {
         if (isRegistering) {
           await signUpWithEmail(email, password);
+          onClose();
         } else {
           await signInWithEmail(email, password);
+          onClose();
         }
       }
-      onClose();
     } catch (error: unknown) {
       if (error instanceof FirebaseError) {
         setError(error.message);
@@ -55,15 +57,31 @@ const SignIn: React.FC<SignInProps> = ({ onClose, isUpgrading = false }) => {
       if (isUpgrading && auth.currentUser) {
         // Link Google account using linkWithPopup
         await linkWithPopup(auth.currentUser, googleProvider);
+        onClose();
       } else {
-        // For regular sign in, we'll use signInWithPopup directly
-        // This will handle both new sign-ins and re-sign-ins
-        const result = await signInWithPopup(auth, googleProvider);
-        
-        // If we get here, sign in was successful
-        if (result.user) {
-          console.log('Successfully signed in with Google:', result.user.email);
-          onClose();
+        // For regular sign in, we'll use signInWithPopup with a custom popup window
+        const popupWindow = window.open('about:blank', 'googleSignIn', 'width=500,height=600');
+        if (!popupWindow) {
+          throw new Error('Pop-up blocked. Please allow pop-ups for this site.');
+        }
+
+        try {
+          const result = await signInWithPopup(auth, googleProvider);
+          if (result.user) {
+            console.log('Successfully signed in with Google:', result.user.email);
+            onClose();
+          }
+        } catch (error) {
+          // If the popup is still open, try to close it manually
+          if (popupWindow && !popupWindow.closed) {
+            try {
+              popupWindow.close();
+            } catch (e) {
+              // Ignore any errors from closing the popup
+              console.debug('Popup close error (expected):', e);
+            }
+          }
+          throw error; // Re-throw the original error
         }
       }
     } catch (error: unknown) {
