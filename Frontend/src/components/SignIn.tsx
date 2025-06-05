@@ -77,11 +77,26 @@ const SignIn: React.FC<SignInProps> = ({ onClose, isUpgrading = false }) => {
             try {
               popupWindow.close();
             } catch (e) {
-              // Ignore any errors from closing the popup
               console.debug('Popup close error (expected):', e);
             }
           }
-          throw error; // Re-throw the original error
+
+          if (error instanceof FirebaseError) {
+            // Handle credential already in use
+            if (error.code === 'auth/credential-already-in-use') {
+              // Get the email from the error
+              const email = error.customData?.email as string;
+              if (email) {
+                setError(`An account already exists with ${email}. Please sign in with your original method or delete the existing account first.`);
+              } else {
+                setError('This Google account is already linked to another user. Please sign in with your original method.');
+              }
+            } else {
+              throw error; // Re-throw other Firebase errors
+            }
+          } else {
+            throw error; // Re-throw non-Firebase errors
+          }
         }
       }
     } catch (error: unknown) {
@@ -101,6 +116,9 @@ const SignIn: React.FC<SignInProps> = ({ onClose, isUpgrading = false }) => {
             break;
           case 'auth/popup-blocked':
             setError('Pop-up was blocked by your browser. Please allow pop-ups for this site.');
+            break;
+          case 'auth/credential-already-in-use':
+            setError('This Google account is already linked to another user. Please sign in with your original method or delete the existing account first.');
             break;
           default:
             setError(error.message);

@@ -6,7 +6,10 @@ import {
   signInWithPopup,
   signOut,
   signInAnonymously,
-  onAuthStateChanged
+  onAuthStateChanged,
+  deleteUser,
+  reauthenticateWithCredential,
+  EmailAuthProvider
 } from 'firebase/auth';
 import { auth, googleProvider } from '../config/firebase';
 
@@ -18,6 +21,7 @@ interface AuthContextType {
   signInWithGoogle: () => Promise<void>;
   signOutUser: () => Promise<void>;
   signInAnonymouslyUser: () => Promise<void>;
+  deleteAccount: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -87,8 +91,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signOutUser = async () => {
     try {
-      await signOut(auth);
+      const currentUser = auth.currentUser;
+      if (currentUser) {
+        // If the user is anonymous, delete the account
+        if (currentUser.isAnonymous) {
+          await deleteUser(currentUser);
+        } else {
+          // For non-anonymous users, just sign out
+          await signOut(auth);
+        }
+      }
     } catch (error) {
+      console.error('Error during sign out:', error);
       throw error;
     }
   };
@@ -101,6 +115,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const deleteAccount = async () => {
+    try {
+      const currentUser = auth.currentUser;
+      if (currentUser) {
+        await deleteUser(currentUser);
+      }
+    } catch (error) {
+      console.error('Error deleting account:', error);
+      throw error;
+    }
+  };
+
   const value = {
     user,
     loading,
@@ -109,6 +135,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     signInWithGoogle,
     signOutUser,
     signInAnonymouslyUser,
+    deleteAccount,
   };
 
   return (
