@@ -27,6 +27,15 @@ const EditNote: React.FC<EditNoteProps> = ({ note, onSave, onCancel, onDelete })
     setReminderTime(note.reminder ? note.reminder.toTimeString().slice(0, 5) : "");
   }, [note]);
 
+  // Log when user starts editing a note
+  useEffect(() => {
+    console.log('User started editing note:', {
+      noteId: note.id,
+      title: note.title,
+      timestamp: new Date().toISOString()
+    });
+  }, [note.id]); // Only log when note.id changes
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (title && content) {
