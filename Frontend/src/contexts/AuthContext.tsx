@@ -33,10 +33,28 @@ export const useAuth = () => {
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [authError, setAuthError] = useState<string | null>(null);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
+      console.log('Auth state changed:', {
+        isAuthenticated: !!user,
+        authMethod: user?.providerData[0]?.providerId || 'anonymous',
+        email: user?.email || 'no email',
+        isAnonymous: user?.isAnonymous || false,
+        timestamp: new Date().toISOString()
+      });
+      
       setUser(user);
+      setLoading(false);
+      setAuthError(null); // Clear any previous errors on successful auth state change
+    }, (error) => {
+      console.error('Auth state change error:', {
+        code: error.code,
+        message: error.message,
+        timestamp: new Date().toISOString()
+      });
+      setAuthError(error.message);
       setLoading(false);
     });
 
