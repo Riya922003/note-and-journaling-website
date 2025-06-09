@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import type { User } from 'firebase/auth';
+import type { User as FirebaseUser } from 'firebase/auth';
 import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
@@ -12,9 +12,11 @@ import {
   EmailAuthProvider
 } from 'firebase/auth';
 import { auth, googleProvider } from '../config/firebase';
+import { userApi, User as BackendUser } from '../services/api';
 
 interface AuthContextType {
-  user: User | null;
+  user: FirebaseUser | null;
+  backendUser: BackendUser | null;
   loading: boolean;
   signInWithEmail: (email: string, password: string) => Promise<void>;
   signUpWithEmail: (email: string, password: string) => Promise<void>;
@@ -22,6 +24,7 @@ interface AuthContextType {
   signOutUser: () => Promise<void>;
   signInAnonymouslyUser: () => Promise<void>;
   deleteAccount: () => Promise<void>;
+  updateProfile: (name: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -35,23 +38,44 @@ export const useAuth = () => {
 };
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<FirebaseUser | null>(null);
+  const [backendUser, setBackendUser] = useState<BackendUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [authError, setAuthError] = useState<string | null>(null);
 
+  // Fetch backend user profile when Firebase auth state changes
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
+    const fetchBackendUser = async (firebaseUser: FirebaseUser) => {
+      try {
+        if (!firebaseUser.isAnonymous) {
+          const profile = await userApi.getProfile();
+          setBackendUser(profile);
+        } else {
+          setBackendUser(null);
+        }
+      } catch (error) {
+        console.error('Error fetching backend user profile:', error);
+        setBackendUser(null);
+      }
+    };
+
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       console.log('Auth state changed:', {
-        isAuthenticated: !!user,
-        authMethod: user?.providerData[0]?.providerId || 'anonymous',
-        email: user?.email || 'no email',
-        isAnonymous: user?.isAnonymous || false,
+        isAuthenticated: !!firebaseUser,
+        authMethod: firebaseUser?.providerData[0]?.providerId || 'anonymous',
+        email: firebaseUser?.email || 'no email',
+        isAnonymous: firebaseUser?.isAnonymous || false,
         timestamp: new Date().toISOString()
       });
       
-      setUser(user);
+      setUser(firebaseUser);
+      if (firebaseUser) {
+        await fetchBackendUser(firebaseUser);
+      } else {
+        setBackendUser(null);
+      }
       setLoading(false);
-      setAuthError(null); // Clear any previous errors on successful auth state change
+      setAuthError(null);
     }, (error) => {
       console.error('Auth state change error:', {
         code: error.code,
@@ -64,6 +88,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     return unsubscribe;
   }, []);
+
+  const updateProfile = async (name: string) => {
+    try {
+      if (!user || user.isAnonymous) {
+        throw new Error('Must be signed in to update profile');
+      }
+      const updatedProfile = await userApi.updateProfile({ name });
+      setBackendUser(updatedProfile);
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      throw error;
+    }
+  };
 
   const signInWithEmail = async (email: string, password: string) => {
     try {
@@ -129,6 +166,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const value = {
     user,
+    backendUser,
     loading,
     signInWithEmail,
     signUpWithEmail,
@@ -136,6 +174,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     signOutUser,
     signInAnonymouslyUser,
     deleteAccount,
+    updateProfile,
   };
 
   return (
