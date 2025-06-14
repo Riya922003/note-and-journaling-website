@@ -32,18 +32,6 @@ const AppRoutes: React.FC = () => {
   // Get unique labels from all notes
   const allLabels = Array.from(new Set(notes.flatMap(note => note.labels))).sort();
 
-  const handleCreateNote = (title: string, content: string) => {
-    const newNote: Note = {
-      id: Date.now().toString(),
-      title,
-      content,
-      reminder: null,
-      labels: [],
-      color: 'bg-white' // Default color
-    };
-    setNotes([newNote, ...notes]);
-  };
-
   const handleEditNote = (id: string, title: string, content: string, reminder: Date | null) => {
     setNotes(notes.map(note => 
       note.id === id ? { ...note, title, content, reminder } : note
@@ -119,19 +107,8 @@ const AppRoutes: React.FC = () => {
             path="/" 
             element={
               <NotesPage
-                notes={notes}
-                onUpdateReminder={handleUpdateReminder}
-                onSelectNote={handleSelectNote}
-                onEditNote={handleEditNote}
-                onDeleteNote={handleDeleteNote}
-                onCreateNote={handleCreateNote}
-                onAddLabel={handleAddLabel}
-                onRemoveLabel={handleRemoveLabel}
-                onUpdateColor={handleUpdateColor}
-                labels={allLabels}
                 selectedLabel={selectedLabel}
                 onLabelSelect={handleLabelSelect}
-                selectedNoteId={selectedNoteId}
               />
             } 
           />

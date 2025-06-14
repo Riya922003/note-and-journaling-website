@@ -74,7 +74,7 @@ const NotesPage: React.FC<NotesPageProps> = ({ selectedLabel, onLabelSelect }) =
         fetchNotes();
     }, [user]);
 
-    const handleCreateNote = async (title: string, content: string) => {
+    const handleCreateNote = async (title: string, content: string, reminder: Date | null) => {
         if (!user || user.isAnonymous) {
             setError('Please sign in to create notes');
             return;
@@ -215,6 +215,13 @@ const NotesPage: React.FC<NotesPageProps> = ({ selectedLabel, onLabelSelect }) =
         }
     };
 
+    const handleSelectNote = (noteId: string | null) => {
+        setSelectedNoteId(noteId);
+        if (noteId) {
+            navigate(`/note/${noteId}`);
+        }
+    };
+
     // Get unique labels from all notes
     const allLabels = Array.from(new Set(notes.flatMap(note => note.labels))).sort();
 
@@ -245,7 +252,8 @@ const NotesPage: React.FC<NotesPageProps> = ({ selectedLabel, onLabelSelect }) =
                 labels={allLabels}
                 selectedLabel={selectedLabel}
                 onLabelSelect={onLabelSelect}
-                onCreateNote={() => setIsCreating(true)}
+                notes={notes}
+                onSelectNote={handleSelectNote}
             />
             
             <main className="flex-1 overflow-y-auto p-6">
